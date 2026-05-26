@@ -29,7 +29,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-#   profile = "ap-ostad"
+  #   profile = "ap-ostad"
   default_tags {
     tags = {
       Project     = var.project_name
@@ -83,12 +83,13 @@ module "db_ec2" {
   db_password_secret_arn = var.db_password
   db_username            = var.db_username
   db_name                = var.db_name
+  db_password            = var.db_password
 
   # ── EC2 sizing ───────────────────────────────────────────────────────────────
-  instance_type        = var.db_instance_type # same footprint as db.t3.micro RDS
-  root_volume_size_gb  = 20
-  key_name             = var.key_name
-#   iam_instance_profile = module.iam_backend.instance_profile_name
+  instance_type       = var.db_instance_type # same footprint as db.t3.micro RDS
+  root_volume_size_gb = 20
+  key_name            = var.key_name
+  #   iam_instance_profile = module.iam_backend.instance_profile_name
 }
 
 # ---------
@@ -140,14 +141,14 @@ module "bastion" {
 
 # Backend EC2 â€” PRIVATE app subnet
 module "backend" {
-  source               = "./modules/ec2"
-  name                 = "${var.project_name}-${var.environment}-backend"
-  role                 = "backend"
-  instance_type        = var.backend_instance_type
-  subnet_id            = module.vpc.private_app_subnet_ids[0]
-  security_group_ids   = [module.security_groups.backend_sg_id]
-  key_name             = var.key_name
-#   iam_instance_profile = module.iam_backend.instance_profile_name
+  source             = "./modules/ec2"
+  name               = "${var.project_name}-${var.environment}-backend"
+  role               = "backend"
+  instance_type      = var.backend_instance_type
+  subnet_id          = module.vpc.private_app_subnet_ids[0]
+  security_group_ids = [module.security_groups.backend_sg_id]
+  key_name           = var.key_name
+  #   iam_instance_profile = module.iam_backend.instance_profile_name
 
   #   user_data = templatefile("${path.module}/scripts/backend.sh", {
   #     database_url_secret_name = module.secrets.database_url_secret_name

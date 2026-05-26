@@ -43,6 +43,11 @@ variable "db_username" {
   default     = "bmi_user"
 }
 
+variable "db_password" {
+  description = "PostgreSQL database password"
+  type        = string
+}
+
 variable "db_name" {
   description = "PostgreSQL database to create"
   type        = string

@@ -58,6 +58,10 @@ output "db_instance_id" {
   value       = module.db_ec2.instance_id
 }
 
+output "ssh_database_via_bastion" {
+  value = "ssh -i ~/Desktop/devops/ubuntu_conf/ap.pem -J ubuntu@${module.bastion.public_ip} ubuntu@${module.db_ec2.private_ip}"
+}
+
 # Grafana
 output "grafana_url" {
   description = "Grafana dashboard"
