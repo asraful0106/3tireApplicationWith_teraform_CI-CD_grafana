@@ -1,17 +1,17 @@
 # ==============================================================================
 # Module: EC2
 # Generic EC2 instance module — used for frontend, backend, and bastion.
-# Always uses the latest Ubuntu 26.04 LTS AMI (data source — never hardcode AMI IDs).
+# Always uses the latest Ubuntu 24.04 LTS AMI (data source — never hardcode AMI IDs).
 # ==============================================================================
 
-# Fetch latest Ubuntu 26.04 LTS AMI — canonical owner, HVM, SSD
+# Fetch latest Ubuntu 24.04 LTS AMI — canonical owner, HVM, SSD
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["388779989543"] # Canonical
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-26.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {

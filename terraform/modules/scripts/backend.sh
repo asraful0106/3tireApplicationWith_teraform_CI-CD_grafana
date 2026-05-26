@@ -20,7 +20,6 @@
 #   ${db_port}                  — 5432
 #   ${db_user}                  — e.g. bmi_user
 #   ${db_name}                  — e.g. bmidb
-#   ${frontend_url}             — CORS allowed origin (frontend public IP / DNS)
 #   ${environment}              — dev / staging / prod
 #   ${aws_region}               — ap-southeast-2
 # ==============================================================================
@@ -37,7 +36,6 @@ DB_HOST="${db_host}"
 DB_PORT="${db_port}"
 DB_USER="${db_user}"
 DB_NAME="${db_name}"
-FRONTEND_URL="${frontend_url}"
 ENVIRONMENT="${environment}"
 AWS_REGION="${aws_region}"
 
@@ -91,8 +89,6 @@ DB_PORT=$DB_PORT
 DB_USER=$DB_USER
 DB_PASSWORD=$DB_PASSWORD
 DB_NAME=$DB_NAME
-
-FRONTEND_URL=$FRONTEND_URL
 EOF
 chmod 600 "$APP_DIR/backend/.env"
 chown ubuntu:ubuntu "$APP_DIR/backend/.env"
@@ -119,10 +115,14 @@ systemctl enable pm2-ubuntu
 NODE_EXPORTER_VER="1.7.0"
 useradd --no-create-home --shell /bin/false node_exporter 2>/dev/null || true
 cd /tmp
-wget -q "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VER}/node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-tar -xf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-install -m755 "node_exporter-${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
-rm -rf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64"*
+
+
+wget -q "https://github.com/prometheus/node_exporter/releases/download/v$${NODE_EXPORTER_VER}/node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+tar -xf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+install -m755 "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
+rm -rf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64"*
+
+
 cat > /etc/systemd/system/node_exporter.service <<SVC
 [Unit]
 Description=Node Exporter
@@ -142,6 +142,5 @@ echo "[node_exporter] running on :9100"
 echo "============================================"
 echo " Backend running on http://0.0.0.0:3000"
 echo " DB host : $DB_HOST:$DB_PORT/$DB_NAME"
-echo " CORS    : $FRONTEND_URL"
 echo " Env     : $ENVIRONMENT"
 echo "============================================"

@@ -16,11 +16,11 @@
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["388779989543"] # Canonical
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-26.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -94,7 +94,7 @@ SHELL
 resource "aws_instance" "db" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
-  subnet_id              = var.db_subnet_id       # first private DB subnet
+  subnet_id              = var.db_subnet_id # first private DB subnet
   vpc_security_group_ids = [var.db_security_group_id]
   iam_instance_profile   = var.iam_instance_profile
   key_name               = var.key_name
@@ -108,7 +108,7 @@ resource "aws_instance" "db" {
   }
 
   user_data                   = local.user_data
-  user_data_replace_on_change = false  # avoid accidental data loss on re-apply
+  user_data_replace_on_change = false # avoid accidental data loss on re-apply
 
   tags = {
     Name = "${var.project_name}-${var.environment}-db-ec2"

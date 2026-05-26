@@ -73,9 +73,10 @@ module "db_ec2" {
   aws_region   = var.aws_region
 
   # ── Networking (same values you passed to RDS) ──────────────────────────────
-  db_subnet_id         = module.vpc.db_subnet_ids[0] # one private DB subnet
-  db_security_group_id = module.vpc.db_security_group_id
-  vpc_cidr             = module.vpc.vpc_cidr
+  db_subnet_id         = module.vpc.private_db_subnet_ids[0]
+  db_security_group_id = module.security_groups.rds_sg_id
+  #   db_security_group_id = module.vpc.db_security_group_id
+  vpc_cidr = module.vpc.vpc_cidr
 
   # ── Database credentials ─────────────────────────────────────────────────────
   db_password_secret_arn = module.secrets.db_password_secret_arn
@@ -152,15 +153,15 @@ module "backend" {
   #     environment              = var.environment
   #     aws_region               = var.aws_region
   #   })
-  user_data = templatefile("${path.module}/scripts/backend.sh", {
+  user_data = templatefile("${path.module}/modules/scripts/backend.sh", {
     db_password_secret_name = module.secrets.db_password_secret_name
     db_host                 = module.db_ec2.db_host
     db_port                 = 5432
     db_user                 = "bmi_user"
     db_name                 = "bmidb"
-    frontend_url            = "http://${module.frontend.public_ip}"
-    environment             = var.environment
-    aws_region              = var.aws_region
+    # frontend_url            = "http://${module.frontend.public_ip}"
+    environment = var.environment
+    aws_region  = var.aws_region
   })
 
   depends_on = [module.secrets, module.db_ec2]
@@ -180,7 +181,7 @@ module "frontend" {
   #     backend_private_ip = module.backend.private_ip
   #     phase              = "basic"
   #   })
-  user_data = templatefile("${path.module}/scripts/frontend.sh", {
+  user_data = templatefile("${path.module}/modules/scripts/frontend.sh", {
     backend_private_ip = module.backend.private_ip
     environment        = var.environment
   })
@@ -194,12 +195,12 @@ module "monitoring" {
 
   name               = "${var.project_name}-${var.environment}-monitoring"
   role               = "monitoring"
-  instance_type      = var.monitoring_instance_type 
+  instance_type      = var.monitoring_instance_type
   subnet_id          = module.vpc.public_subnet_ids[0]
   security_group_ids = [module.security_groups.frontend_sg_id]
   key_name           = var.key_name
 
-  user_data = templatefile("${path.module}/scripts/monitoring.sh", {
+  user_data = templatefile("${path.module}/modules/scripts/monitoring.sh", {
     frontend_private_ip    = module.frontend.private_ip
     backend_private_ip     = module.backend.private_ip
     db_private_ip          = module.db_ec2.db_host

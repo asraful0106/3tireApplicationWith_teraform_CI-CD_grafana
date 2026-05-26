@@ -98,10 +98,14 @@ systemctl restart nginx
 NODE_EXPORTER_VER="1.7.0"
 useradd --no-create-home --shell /bin/false node_exporter 2>/dev/null || true
 cd /tmp
-wget -q "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VER}/node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-tar -xf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-install -m755 "node_exporter-${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
-rm -rf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64"*
+
+
+wget -q "https://github.com/prometheus/node_exporter/releases/download/v$${NODE_EXPORTER_VER}/node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+tar -xf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+install -m755 "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
+rm -rf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64"*
+
+
 cat > /etc/systemd/system/node_exporter.service <<SVC
 [Unit]
 Description=Node Exporter

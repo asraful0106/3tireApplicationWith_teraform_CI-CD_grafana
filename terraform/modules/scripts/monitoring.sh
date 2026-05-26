@@ -50,10 +50,15 @@ git clone "$REPO_URL" "$APP_DIR"
 useradd --no-create-home --shell /bin/false node_exporter 2>/dev/null || true
 
 cd /tmp
-wget -q "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VER}/node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-tar -xf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
-install -m755 "node_exporter-${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
-rm -rf "node_exporter-${NODE_EXPORTER_VER}.linux-amd64"*
+
+
+
+wget -q "https://github.com/prometheus/node_exporter/releases/download/v$${NODE_EXPORTER_VER}/node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+tar -xf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64.tar.gz"
+install -m755 "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64/node_exporter" /usr/local/bin/node_exporter
+rm -rf "node_exporter-$${NODE_EXPORTER_VER}.linux-amd64"*
+
+
 
 cat > /etc/systemd/system/node_exporter.service <<SVC
 [Unit]
@@ -74,13 +79,14 @@ useradd --no-create-home --shell /bin/false prometheus 2>/dev/null || true
 mkdir -p /etc/prometheus /var/lib/prometheus
 
 cd /tmp
-wget -q "https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VER}/prometheus-${PROMETHEUS_VER}.linux-amd64.tar.gz"
-tar -xf "prometheus-${PROMETHEUS_VER}.linux-amd64.tar.gz"
-cd "prometheus-${PROMETHEUS_VER}.linux-amd64"
+
+wget -q "https://github.com/prometheus/prometheus/releases/download/v$${PROMETHEUS_VER}/prometheus-$${PROMETHEUS_VER}.linux-amd64.tar.gz"
+tar -xf "prometheus-$${PROMETHEUS_VER}.linux-amd64.tar.gz"
+cd "prometheus-$${PROMETHEUS_VER}.linux-amd64"
 install -m755 prometheus promtool /usr/local/bin/
 cp -r consoles console_libraries /etc/prometheus/
 chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
-cd /tmp && rm -rf "prometheus-${PROMETHEUS_VER}.linux-amd64"*
+cd /tmp && rm -rf "prometheus-$${PROMETHEUS_VER}.linux-amd64"*
 
 # prometheus.yml ───────────────────────────────────────────
 cat > /etc/prometheus/prometheus.yml <<PROM
@@ -88,7 +94,7 @@ global:
   scrape_interval:     15s
   evaluation_interval: 15s
   external_labels:
-    environment: '${ENVIRONMENT}'
+    environment: '$${ENVIRONMENT}'
 
 scrape_configs:
 
@@ -103,23 +109,23 @@ scrape_configs:
 
   - job_name: 'frontend'
     static_configs:
-      - targets: ['${FRONTEND_IP}:9100']
+      - targets: ['$${FRONTEND_IP}:9100']
         labels: { role: 'frontend' }
 
   - job_name: 'backend'
     static_configs:
-      - targets: ['${BACKEND_IP}:9100']
+      - targets: ['$${BACKEND_IP}:9100']
         labels: { role: 'backend' }
 
   - job_name: 'backend_app'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['${BACKEND_IP}:3000']
+      - targets: ['$${BACKEND_IP}:3000']
         labels: { role: 'backend' }
 
   - job_name: 'database'
     static_configs:
-      - targets: ['${DB_IP}:9100']
+      - targets: ['$${DB_IP}:9100']
         labels: { role: 'database' }
 PROM
 chown prometheus:prometheus /etc/prometheus/prometheus.yml
@@ -150,7 +156,7 @@ echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stab
 apt-get update -y && apt-get install -y grafana
 
 # Admin password + disable public sign-up
-sed -i "s/^;admin_password =.*/admin_password = ${GRAFANA_PASS}/" /etc/grafana/grafana.ini
+sed -i "s/^;admin_password =.*/admin_password = $${GRAFANA_PASS}/" /etc/grafana/grafana.ini
 sed -i "s/^;allow_sign_up =.*/allow_sign_up = false/"              /etc/grafana/grafana.ini
 
 # Auto-provision: Prometheus datasource
