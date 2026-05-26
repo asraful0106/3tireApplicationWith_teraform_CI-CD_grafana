@@ -1,0 +1,8 @@
+aws_region             = "ap-south-1"
+project_name           = "bmi-health-tracker"
+environment            = "dev"
+key_name               = "sarowar-ostad-mumbai"
+allowed_ssh_cidr       = "YOUR_IP/32"
+frontend_instance_type = "t3.micro"
+backend_instance_type  = "t3.small"
+db_instance_class      = "db.t3.micro"
