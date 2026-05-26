@@ -25,6 +25,11 @@ output "ssh_bastion" {
   value = "ssh -i ~/Desktop/devops/ubuntu_conf/ap.pem ubuntu@${module.bastion.public_ip}"
 }
 
+output "ssh_frontend_via_bastion" {
+  value = "ssh -i ~/Desktop/devops/ubuntu_conf/ap.pem -J ubuntu@${module.bastion.public_ip} ubuntu@${module.frontend.private_ip}"
+}
+
+
 # ── Backend ────────────────────────────────────────────────────────────────────
 
 output "backend_private_ip" {
@@ -71,7 +76,7 @@ output "prometheus_url" {
 
 # ── Secrets ────────────────────────────────────────────────────────────────────
 
-output "db_password_secret_name" {
-  description = "Secrets Manager secret name holding the DB password"
-  value       = module.secrets.db_password_secret_name
-}
+# output "db_password_secret_name" {
+#   description = "Secrets Manager secret name holding the DB password"
+#   value       = module.secrets.db_password_secret_name
+# }

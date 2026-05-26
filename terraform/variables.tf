@@ -50,6 +50,24 @@ variable "db_instance_type" {
   default = "t3.micro"
 }
 
+variable "db_password" {
+  description = "Database password"
+  type        = string
+  default     = "db_password"
+}
+
+variable "db_username" {
+  description = "Database username for the connection string"
+  type        = string
+  default     = "ap_user"
+}
+
+variable "db_name" {
+  description = "Database name for the connection string"
+  type        = string
+  default     = "apthreetiredb"
+}
+
 # With RDS
 # variable "db_instance_class" {
 #   type    = string

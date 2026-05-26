@@ -45,7 +45,7 @@ chown -R ubuntu:ubuntu "$APP_DIR"
 # ── 3. Deploy static files ────────────────────────────────
 # Only the frontend/ directory is needed on this EC2.
 rm -rf /var/www/html/*
-cp -r "$APP_DIR/frontend/"* /var/www/html/
+cp -r "$APP_DIR/app/frontend/"* /var/www/html/
 
 # ── 4. Nginx config ───────────────────────────────────────
 # • /api/*   → proxied to backend EC2 (makes `const API = ''` in index.html work)

@@ -310,6 +310,7 @@ Do you want to perform these actions?
 This takes approximately **3–6 minutes**. 
 
 ![Terraform Plan](images/terrafom_apply.png)
+
 ---
 
 ### 5.11 Wait for Bootstrap to Complete

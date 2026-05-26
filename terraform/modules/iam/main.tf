@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "ec2_assume_role" {
 resource "aws_iam_role" "ec2" {
   name               = "${var.project_name}-${var.environment}-${var.role_suffix}-role"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
-  description        = "EC2 role for ${var.project_name} ${var.environment} — Secrets Manager access"
+  description        = "EC2 role for ${var.project_name} ${var.environment} - Secrets Manager access"
 
   tags = {
     Name = "${var.project_name}-${var.environment}-${var.role_suffix}-role"

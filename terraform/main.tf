@@ -29,6 +29,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+#   profile = "ap-ostad"
   default_tags {
     tags = {
       Project     = var.project_name
@@ -56,13 +57,13 @@ module "security_groups" {
 }
 
 # IAM role for backend â†’ Secrets Manager
-module "iam_backend" {
-  source       = "./modules/iam"
-  project_name = var.project_name
-  environment  = var.environment
-  aws_region   = var.aws_region
-  role_suffix  = "backend"
-}
+# module "iam_backend" {
+#   source       = "./modules/iam"
+#   project_name = var.project_name
+#   environment  = var.environment
+#   aws_region   = var.aws_region
+#   role_suffix  = "backend"
+# }
 
 # Without RDS
 module "db_ec2" {
@@ -79,30 +80,31 @@ module "db_ec2" {
   vpc_cidr = module.vpc.vpc_cidr
 
   # ── Database credentials ─────────────────────────────────────────────────────
-  db_password_secret_arn = module.secrets.db_password_secret_arn
-  db_username            = "ap_user"
-  db_name                = "threetiredb"
+  db_password_secret_arn = var.db_password
+  db_username            = var.db_username
+  db_name                = var.db_name
 
   # ── EC2 sizing ───────────────────────────────────────────────────────────────
   instance_type        = var.db_instance_type # same footprint as db.t3.micro RDS
   root_volume_size_gb  = 20
   key_name             = var.key_name
-  iam_instance_profile = module.iam_backend.instance_profile_name
-}
-
-module "secrets" {
-  source       = "./modules/secrets"
-  project_name = var.project_name
-  environment  = var.environment
-
-  db_host     = module.db_ec2.db_host # was: module.rds.db_host
-  db_username = "ap_user"
-  db_name     = "threetiredb"
+#   iam_instance_profile = module.iam_backend.instance_profile_name
 }
 
 # ---------
 
 # # -------RDS PostgreSQL
+
+# module "secrets" {
+#   source       = "./modules/secrets"
+#   project_name = var.project_name
+#   environment  = var.environment
+
+#   db_host     = module.db_ec2.db_host # was: module.rds.db_host
+#   db_username = "ap_user"
+#   db_name     = "threetiredb"
+# }
+
 # module "rds" {
 #   source = "./modules/rds"
 #   project_name      = var.project_name
@@ -145,7 +147,7 @@ module "backend" {
   subnet_id            = module.vpc.private_app_subnet_ids[0]
   security_group_ids   = [module.security_groups.backend_sg_id]
   key_name             = var.key_name
-  iam_instance_profile = module.iam_backend.instance_profile_name
+#   iam_instance_profile = module.iam_backend.instance_profile_name
 
   #   user_data = templatefile("${path.module}/scripts/backend.sh", {
   #     database_url_secret_name = module.secrets.database_url_secret_name
@@ -154,17 +156,19 @@ module "backend" {
   #     aws_region               = var.aws_region
   #   })
   user_data = templatefile("${path.module}/modules/scripts/backend.sh", {
-    db_password_secret_name = module.secrets.db_password_secret_name
-    db_host                 = module.db_ec2.db_host
-    db_port                 = 5432
-    db_user                 = "bmi_user"
-    db_name                 = "bmidb"
+    # db_password_secret_name = module.secrets.db_password_secret_name
+    db_password = var.db_password
+    db_host     = module.db_ec2.db_host
+    db_port     = 5432
+    db_user     = var.db_username
+    db_name     = var.db_name
     # frontend_url            = "http://${module.frontend.public_ip}"
     environment = var.environment
     aws_region  = var.aws_region
   })
 
-  depends_on = [module.secrets, module.db_ec2]
+  #   depends_on = [module.secrets, module.db_ec2]
+  depends_on = [module.db_ec2]
 }
 
 # Frontend EC2 â€” PUBLIC subnet (Phase 1: directly internet-accessible)
