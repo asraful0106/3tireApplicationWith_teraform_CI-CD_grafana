@@ -417,7 +417,7 @@ git add .
 git commit -m "Initial commit: 3-tier app with Terraform + PostgreSQL EC2"
 
 # Create the repo on GitHub, then:
-git remote add origin https://github.com/My_USERNAME/3tier-aws-terraform.git
+git remote add origin https://github.com/asraful0106/3tireApplicationWith_teraform_CI-CD_grafana
 git branch -M main
 git push -u origin main
 ```

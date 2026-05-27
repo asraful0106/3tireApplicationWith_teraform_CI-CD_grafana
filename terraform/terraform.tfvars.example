@@ -1,8 +1,17 @@
-aws_region             = "ap-south-1"
-project_name           = "bmi-health-tracker"
-environment            = "dev"
-key_name               = "sarowar-ostad-mumbai"
-allowed_ssh_cidr       = "YOUR_IP/32"
-frontend_instance_type = "t3.micro"
-backend_instance_type  = "t3.small"
-db_instance_class      = "db.t3.micro"
+# terraform/terraform.tfvars
+aws_region               = "ap-southeast-2"
+project_name             = "three"
+environment              = "dev"
+key_name                 = "key_name"
+allowed_ssh_cidr         = "0.0.0.0/0"
+frontend_instance_type   = "t3.micro"
+backend_instance_type    = "t3.small"
+monitoring_instance_type = "t3.small"
+grafana_admin_password   = "MyStrongPass123!"
+
+# Database
+# db_instance_class      = "db.t3.micro" #(with RDS)
+db_password = "MyStrongPass123!"
+db_username = "user_name"
+db_name = "db_name"
+db_instance_type = "t3.micro" #(without RDS)

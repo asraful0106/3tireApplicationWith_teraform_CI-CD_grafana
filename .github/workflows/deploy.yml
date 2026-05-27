@@ -1,0 +1,159 @@
+##############################################################
+# .github/workflows/deploy.yml
+##############################################################
+
+name: CI/CD — 3-Tier AWS App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION:     ${{ secrets.AWS_REGION }}
+  TF_WORKING_DIR: ./terraform
+
+jobs:
+  # ── Job 1: Test ───────────────────────────────────────────
+  test:
+    name: Lint & Test Node.js App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: app/backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm test --if-present
+
+  # ── Job 2: Plan (PRs only) ────────────────────────────────
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+      - run: terraform init
+      - run: terraform fmt -check -recursive
+      - run: terraform validate
+      - name: Terraform Plan
+        env:
+          TF_VAR_key_name:    ${{ secrets.TF_VAR_KEY_NAME }}
+          TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_my_ip_cidr:  ${{ secrets.TF_VAR_MY_IP_CIDR }}
+        run: terraform plan -no-color
+      - name: Comment plan on PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              body:  '✅ `terraform plan` completed — review the Actions log for details.'
+            })
+
+  # ── Job 3: Apply + Deploy (main only) ────────────────────
+  terraform-apply:
+    name: Terraform Apply & Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - run: terraform init
+
+      - name: Terraform Apply
+        env:
+          TF_VAR_key_name:    ${{ secrets.TF_VAR_KEY_NAME }}
+          TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_my_ip_cidr:  ${{ secrets.TF_VAR_MY_IP_CIDR }}
+        run: terraform apply -auto-approve
+
+      - name: Capture outputs
+        id: tf
+        env:
+          TF_VAR_key_name:    ${{ secrets.TF_VAR_KEY_NAME }}
+          TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
+          TF_VAR_my_ip_cidr:  ${{ secrets.TF_VAR_MY_IP_CIDR }}
+        run: |
+          echo "app_url=$(terraform output -raw app_url)"        >> $GITHUB_OUTPUT
+          echo "bastion_ip=$(terraform output -raw bastion_public_ip)" >> $GITHUB_OUTPUT
+          echo "app_ip=$(terraform output -raw app_private_ip)"       >> $GITHUB_OUTPUT
+          echo "grafana_url=$(terraform output -raw grafana_url)"     >> $GITHUB_OUTPUT
+
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+      - name: Deploy app code via bastion
+        env:
+          BASTION: ${{ steps.tf.outputs.bastion_ip }}
+          APP:     ${{ steps.tf.outputs.app_ip }}
+        run: |
+          rsync -avz \
+            -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+                    -o ProxyJump=ec2-user@$BASTION" \
+            ../app/backend/ ec2-user@$APP:/opt/app/
+
+          rsync -avz \
+            -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+                    -o ProxyJump=ec2-user@$BASTION" \
+            ../app/frontend/ ec2-user@$APP:/opt/app/public/
+
+          ssh -i /tmp/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o ProxyJump=ec2-user@$BASTION \
+              ec2-user@$APP \
+              "cd /opt/app && npm install --omit=dev && pm2 restart 3tier-app && pm2 save"
+
+      - name: Clean up key
+        if: always()
+        run: rm -f /tmp/deploy_key
+
+      - name: Deployment summary
+        run: |
+          echo "### 🚀 Deployment complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **App URL** | ${{ steps.tf.outputs.app_url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bastion IP | ${{ steps.tf.outputs.bastion_ip }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Grafana | ${{ steps.tf.outputs.grafana_url }} |" >> $GITHUB_STEP_SUMMARY
