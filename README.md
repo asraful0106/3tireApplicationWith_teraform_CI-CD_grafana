@@ -492,6 +492,8 @@ git push origin main
 # → Approve it → Terraform applies → App code is deployed via SSH
 ```
 
+![Git ci/cd](images/git_cd.png)
+
 ---
 
 ### 6.5 How the Pipeline Works
