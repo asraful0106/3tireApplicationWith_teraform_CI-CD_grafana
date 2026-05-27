@@ -203,7 +203,7 @@ module "monitoring" {
   role               = "monitoring"
   instance_type      = var.monitoring_instance_type
   subnet_id          = module.vpc.public_subnet_ids[0]
-  security_group_ids = [module.security_groups.frontend_sg_id]
+  security_group_ids = [module.security_groups.monitoring_sg_id]
   key_name           = var.key_name
 
   user_data = templatefile("${path.module}/modules/scripts/monitoring.sh", {

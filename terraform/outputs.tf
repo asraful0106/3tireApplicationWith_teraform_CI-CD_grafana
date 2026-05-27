@@ -39,7 +39,7 @@ output "backend_private_ip" {
 
 output "api_health_check" {
   description = "Direct backend health check (reachable only from within VPC / bastion)"
-  value       = "http://${module.backend.private_ip}:3000/api/health"
+  value       = "http://${module.frontend.public_ip}:3000/api/health"
 }
 
 output "ssh_backend_via_bastion" {
