@@ -430,16 +430,29 @@ GitHub repo → **Settings → Secrets and variables → Actions → New reposit
 
 Add each of the following:
 
-| Secret Name | Value | How to get it |
-|---|---|---|
-| `AWS_ACCESS_KEY_ID` | My IAM access key | AWS Console → IAM → Users → Security credentials |
-| `AWS_SECRET_ACCESS_KEY` | My IAM secret key | Same as above |
-| `AWS_REGION` | `ap-southeast-2` | My chosen AWS region |
-| `TF_VAR_KEY_NAME` | `ap` | The key pair name from step 5.4 |
-| `TF_VAR_DB_PASSWORD` | `MyStr0ngP@ssword!` | Same as `db_password` in terraform.tfvars |
-| `TF_VAR_MY_IP_CIDR` | `0.0.0.0/0` | Or My IP/32 — used for SSH allowlist |
-| `EC2_SSH_PRIVATE_KEY` | Full contents of `~/Desktop/devops/ubuntu_conf/ap.pem` | `cat ~/Desktop/devops/ubuntu_conf/ap.pem` |
+| Name | Value to enter |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | IAM user access key ID — `AKIAIOSFODNN7EXAMPLE` |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret key — `wJalrXUtnFEMI/K7MDENG/bPxRfiCY...` |
+| `AWS_REGION` | AWS region — `ap-southeast-1` |
+| `TF_VAR_KEY_NAME` | EC2 key pair name (the name in AWS, not the .pem filename) — `my-project-key` |
+| `TF_VAR_DB_PASSWORD` | PostgreSQL password, no `@` or `/` chars — `MyStrongPass123!` |
+| `TF_VAR_DB_USERNAME` | PostgreSQL username to create — `ap_user` |
+| `TF_VAR_DB_NAME` | PostgreSQL database name — `threetiredb` |
+| `TF_VAR_ALLOWED_SSH_CIDR` | Your IP for bastion SSH access (find it at ifconfig.me) — `103.45.67.89/32` |
+| `TF_VAR_GRAFANA_ADMIN_PASSWORD` | Grafana admin UI password — `MyStrongPass123!` |
+| `EC2_SSH_PRIVATE_KEY` | Full contents of your `.pem` file, including `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` lines |
 
+## Settings → Secrets and variables → Actions → Variables
+
+| Name | Value to enter |
+|---|---|
+| `TF_VAR_PROJECT_NAME` | Project name prefix for all AWS resources — `three` |
+| `TF_VAR_ENVIRONMENT` | Environment tag — `dev` |
+| `TF_VAR_FRONTEND_INSTANCE_TYPE` | EC2 type for frontend — `t3.micro` |
+| `TF_VAR_BACKEND_INSTANCE_TYPE` | EC2 type for backend — `t3.small` |
+| `TF_VAR_MONITORING_INSTANCE_TYPE` | EC2 type for Grafana/Prometheus — `t3.small` |
+| `TF_VAR_DB_INSTANCE_TYPE` | EC2 type for DB server — `t3.micro` |
 
 
 ---
