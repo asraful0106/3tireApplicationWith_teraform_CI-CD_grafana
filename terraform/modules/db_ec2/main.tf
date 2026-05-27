@@ -1,3 +1,4 @@
+# terraform/modules/db_ec2/main.tf
 # ==============================================================================
 # Module: db_ec2 (FIXED & ROBUST)
 # PostgreSQL 15 on EC2 replacement for RDS
@@ -32,15 +33,15 @@ resource "aws_instance" "db" {
     encrypted             = true
   }
 
-  user_data = templatefile("${path.module}/scripts/db.sh", {
-    db_username             = var.db_username
-    db_password             = var.db_password
-    db_name                 = var.db_name
-    vpc_cidr                = var.vpc_cidr
-    aws_region              = var.aws_region
-    db_password_secret_arn  = var.db_password_secret_arn
+  user_data = templatefile("${path.root}/modules/scripts/db.sh", {
+    db_username = var.db_username
+    db_name     = var.db_name
+    db_password = var.db_password
+    vpc_cidr    = var.vpc_cidr
+    aws_region  = var.aws_region
+    environment = var.environment
   })
-  
+
   user_data_replace_on_change = true
 
   tags = {

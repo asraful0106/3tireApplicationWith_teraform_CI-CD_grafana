@@ -1,4 +1,4 @@
-# ==============================================================================
+# terraform/modules/ec2/main.tf ==============================================================================
 # Module: EC2
 # Generic EC2 instance module — used for frontend, backend, and bastion.
 # Always uses the latest Ubuntu 24.04 LTS AMI (data source — never hardcode AMI IDs).

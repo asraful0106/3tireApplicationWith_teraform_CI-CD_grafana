@@ -319,43 +319,7 @@ The EC2 instances run bootstrap scripts (`user_data`) automatically on first boo
 PostgreSQL setup takes about **2–3 minutes** after the instance shows "running".  
 The app server takes about **1–2 minutes** after that (it waits for npm install).
 
-To monitor bootstrap progress, SSH to the postgres instance via the bastion and tail the log:
-
-```bash
-# Get postgres IP
-POSTGRES_IP=$(terraform output -raw postgres_private_ip)
-BASTION_IP=$(terraform output -raw bastion_public_ip)
-
-# SSH to postgres server via bastion
-ssh -J ec2-user@$BASTION_IP \
-    -i ~/Desktop/devops/ubuntu_conf/ap.pem \
-    ec2-user@$POSTGRES_IP \
-    "sudo tail -f /var/log/postgres-setup.log"
-```
-
-Wait until you see:
-```
-=== [timestamp] PostgreSQL bootstrap complete ===
-    Host     : 10.0.20.x
-    Database : appdb
-    User     : appuser
-```
-
-Then check the app server bootstrap:
-```bash
-APP_IP=$(terraform output -raw app_private_ip)
-
-ssh -J ec2-user@$BASTION_IP \
-    -i ~/Desktop/devops/ubuntu_conf/ap.pem \
-    ec2-user@$APP_IP \
-    "sudo tail -f /var/log/user-data.log"
-```
-
-Wait until you see:
-```
-=== [timestamp] App server bootstrap complete ===
-```
-
+![Frontend Working](images/frontend_working.png)
 ---
 
 ### 5.12 Verify PostgreSQL is Running
@@ -390,6 +354,9 @@ sudo ss -tlnp | grep 5432
 ```
 
 Type `exit` to leave the postgres server.
+
+
+![Postgress Working](images/postgress_working.png)
 
 ---
 
@@ -433,32 +400,8 @@ curl -X POST http://localhost:3000/api/items \
 
 Type `exit` to leave.
 
----
 
-### 5.14 Open the App in My Browser
-
-The app server has no public IP. Use an SSH port-forward through the bastion:
-
-```bash
-BASTION_IP=$(terraform output -raw bastion_public_ip)
-APP_IP=$(terraform output -raw app_private_ip)
-
-ssh -N -L 8080:$APP_IP:3000 \
-    -i ~/Desktop/devops/ubuntu_conf/ap.pem \
-    ec2-user@$BASTION_IP
-```
-
-Leave this terminal running, then open My browser:
-
-```
-http://localhost:8080
-```
-
-You should see the 3-tier app UI with:
-- Architecture diagram showing the 4 tiers
-- Backend API status: **Online**
-- PostgreSQL status: **Connected**
-- Items CRUD interface backed by the PostgreSQL EC2
+![App Working](images/app_working.png)
 
 ---
 

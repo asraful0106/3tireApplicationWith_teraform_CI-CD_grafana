@@ -1,3 +1,4 @@
+# terraform/main.tf
 # ==============================================================================
 #
 # Frontend EC2  â†’ PUBLIC subnet  (Nginx, port 80 open to internet)

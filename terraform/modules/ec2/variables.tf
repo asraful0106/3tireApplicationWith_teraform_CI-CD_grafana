@@ -1,3 +1,5 @@
+# terraform/modules/ec2/variales.tf
+
 variable "name" {
   description = "Name tag for the EC2 instance"
   type        = string
